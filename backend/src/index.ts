@@ -11,6 +11,11 @@ const port = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
+// Health check
+app.get('/health', (req: Request, res: Response) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date() });
+});
+
 // Users
 app.get('/users', async (req: Request, res: Response) => {
   const users = await prisma.user.findMany({
@@ -138,8 +143,8 @@ app.post('/rides/accept', async (req: Request, res: Response) => {
 // Update pool status
 app.post('/pools/:id/status', async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const { status } = req.body; // DRIVER_ARRIVED, STARTED, COMPLETED, CANCELLED
+    const id = req.params.id as string;
+    const status = req.body.status as string; // DRIVER_ARRIVED, STARTED, COMPLETED, CANCELLED
 
     const updatedPool = await prisma.$transaction(async (tx) => {
       const pool = await tx.pool.update({
